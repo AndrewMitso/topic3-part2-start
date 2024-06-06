@@ -28,27 +28,76 @@ import com.topic3.android.reddit.domain.model.PostModel
 import com.topic3.android.reddit.domain.model.PostModel.Companion.DEFAULT_POST
 
 @Composable
-fun TextPost(post: PostModel) {
-  Post(post) {
-    TextContent(post.text)
+fun TextPost(
+  post: PostModel,
+  onJoinButtonClick: (Boolean) -> Unit = {}
+) {
+  Post(post, onJoinButtonClick) { TextContent(post.text) }
+}
+
+@Composable
+fun ImagePost(
+  post: PostModel,
+  onJoinButtonClick: (Boolean) -> Unit = {}
+) {
+  Post(post, onJoinButtonClick) { ImageContent(post.image!!) }
+}
+
+@Composable
+fun Post(
+  post: PostModel,
+  onJoinButtonClick: (Boolean) -> Unit = {},
+  content: @Composable () -> Unit = {}
+) {
+  Card(shape = MaterialTheme.shapes.large) {
+    Column(
+      modifier = Modifier.padding(
+        top = 8.dp,
+        bottom = 8.dp
+      )
+    ) {
+      Header(post, onJoinButtonClick)
+      Spacer(modifier = Modifier.height(4.dp))
+      content.invoke()
+      Spacer(modifier = Modifier.height(8.dp))
+      PostActions(post)
+    }
   }
 }
 
 @Composable
-fun ImagePost(post: PostModel) {
-  Post(post) {
-    ImageContent(post.image ?: R.drawable.compose_course)
+fun Header(
+  post: PostModel,
+  onJoinButtonClick: (Boolean) -> Unit = {} // Здесь
+) {
+  Row(
+    modifier = Modifier.padding(start = 16.dp),
+    verticalAlignment = Alignment.CenterVertically // Здесь
+  ) {
+    Image(
+      ImageBitmap.imageResource(id = R.drawable.subreddit_placeholder),
+      contentDescription = stringResource(id = R.string.subreddits),
+      Modifier
+        .size(40.dp)
+        .clip(CircleShape)
+    )
+    Spacer(modifier = Modifier.width(8.dp))
+    Column(modifier = Modifier.weight(1f)) {
+      Text(
+        text = stringResource(R.string.subreddit_header, post.subreddit),
+        fontWeight = FontWeight.Medium,
+        color = MaterialTheme.colors.primaryVariant
+      )
+      Text(
+        text = stringResource(R.string.post_header, post.username, post.postedTime),
+        color = Color.Gray
+      )
+    }
+    Spacer(modifier = Modifier.width(4.dp)) // Здесь
+    JoinButton(onJoinButtonClick) // Здесь
+    MoreActionsMenu()
   }
-}
-
-@Composable
-fun Post(post: PostModel, content: @Composable () -> Unit = {}) {
-  //TODO add your code here
-}
-
-@Composable
-fun Header(post: PostModel) {
-  //TODO add your code here
+  Title(text = post.title)
 }
 
 @Composable
@@ -169,12 +218,31 @@ fun VotingAction(
   onUpVoteAction: () -> Unit,
   onDownVoteAction: () -> Unit
 ) {
-  //TODO add your code here
+  Row(verticalAlignment = Alignment.CenterVertically) {
+    ArrowButton(
+      onUpVoteAction,
+      R.drawable.ic_baseline_arrow_upward_24
+    )
+    Text(
+      text = text,
+      color = Color.Gray,
+      fontWeight = FontWeight.Medium, fontSize = 12.sp
+    )
+    ArrowButton(onDownVoteAction, R.drawable.ic_baseline_arrow_downward_24)
+  }
+
 }
 
 @Composable
 fun ArrowButton(onClickAction: () -> Unit, arrowResourceId: Int) {
-  //TODO add your code here
+  IconButton(onClick = onClickAction, modifier = Modifier.size(30.dp)) {
+    Icon(
+      imageVector = ImageVector.vectorResource(arrowResourceId),
+      contentDescription = stringResource(id = R.string.upvote),
+      modifier = Modifier.size(20.dp),
+      tint = Color.Gray
+    )
+  }
 }
 
 @Composable
@@ -197,13 +265,13 @@ fun PostAction(
   }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun ArrowButtonPreview() {
   ArrowButton({}, R.drawable.ic_baseline_arrow_upward_24)
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun HeaderPreview() {
   Column {

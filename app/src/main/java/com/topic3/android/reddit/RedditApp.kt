@@ -2,15 +2,18 @@ package com.topic3.android.reddit
 
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
@@ -18,10 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.topic3.android.reddit.appdrawer.AppDrawer
 import com.topic3.android.reddit.routing.RedditRouter
 import com.topic3.android.reddit.routing.Screen
-import com.topic3.android.reddit.screens.AddScreen
-import com.topic3.android.reddit.screens.HomeScreen
-import com.topic3.android.reddit.screens.MyProfileScreen
-import com.topic3.android.reddit.screens.SubredditsScreen
+import com.topic3.android.reddit.screens.*
 import com.topic3.android.reddit.theme.RedditTheme
 import com.topic3.android.reddit.viewmodel.MainViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -82,6 +82,7 @@ fun getTopBar(
 @Composable
 fun TopAppBar(scaffoldState: ScaffoldState, coroutineScope: CoroutineScope) {
 
+    val context = LocalContext.current
     val colors = MaterialTheme.colors
 
     TopAppBar(
@@ -102,6 +103,19 @@ fun TopAppBar(scaffoldState: ScaffoldState, coroutineScope: CoroutineScope) {
                     contentDescription = stringResource(id = R.string.account)
                 )
             }
+        },
+        actions = {
+            if (RedditRouter.currentScreen.value == Screen.Home) {
+                IconButton(onClick = {
+                    context.startActivity(Intent(context, ChatActivity::class.java))
+                }) {
+                    Icon(
+                        Icons.Filled.MailOutline,
+                        tint = Color.LightGray,
+                        contentDescription = "Chat Icon"
+                    )
+                }
+            }
         }
     )
 }
@@ -119,8 +133,9 @@ private fun MainScreenContainer(
         when (screenState.value) {
             Screen.Home -> HomeScreen(viewModel)
             Screen.Subscriptions -> SubredditsScreen()
-            Screen.NewPost -> AddScreen()
-            Screen.MyProfile -> MyProfileScreen()
+            Screen.NewPost -> AddScreen(viewModel)
+            Screen.MyProfile -> MyProfileScreen(viewModel)
+            Screen.ChooseCommunity -> ChooseCommunityScreen(viewModel)
         }
     }
 }
